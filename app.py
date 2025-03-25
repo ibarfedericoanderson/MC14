@@ -4,14 +4,16 @@ import graphviz
 import os
 import base64
 
-# Configuración inicial de la página
+# Page configuration
 st.set_page_config(page_title="Diagrama de Flujo de Investigación Científica MC-14", layout="wide")
 
-# Inicialización del estado de la sesión
+# Initialize session state
 if "selected_node" not in st.session_state:
     st.session_state["selected_node"] = None
+if "hover_node" not in st.session_state:
+    st.session_state["hover_node"] = None
 
-# Personalización del fondo de la página
+# Custom page styling
 st.markdown("""
 <style>
     .main {
@@ -45,10 +47,42 @@ st.markdown("""
         font-weight: bold;
         font-size: 18px;
     }
+    .node-hover-card {
+        background-color: rgba(61, 61, 61, 0.9);
+        border: 2px solid #4472C4;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    .node-hover-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(68, 114, 196, 0.5);
+    }
+    .node-button {
+        color: white !important;
+        font-family: Arial, sans-serif !important;
+        font-weight: bold !important;
+        border: none !important;
+        border-radius: 5px !important;
+        padding: 10px !important;
+        text-align: center !important;
+        margin: 5px 0 !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        transition: all 0.3s ease !important;
+    }
+    .node-button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 8px rgba(255,255,255,0.2);
+    }
+    .node-button.decision {
+        color: black !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Información del autor
+# Author information
 st.markdown("""
 <div style='background-color: #1E1E1E; padding: 15px; border-radius: 10px; margin-bottom: 10px;'>
     <h2 style='color: white; margin: 0 0 5px 0;'>👤 Autor</h2>
@@ -72,7 +106,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Descripciones detalladas para cada nodo
+# Node descriptions
 node_descriptions = {
     "1. Inicio": {
         "title": "🚀 Inicio del Proceso Científico",
@@ -522,6 +556,33 @@ node_descriptions = {
     }
 }
 
+# Color mapping for nodes
+node_colors = {
+    '1. Inicio': '#70AD47',  # Green (Start/End)
+    '23. Fin': '#70AD47',    # Green (Start/End)
+    '2. Observación\nde Fenómeno': '#7F7F7F',  # Gray (Predefined Process)
+    '12. Recolección\nde Datos': '#7F7F7F',    # Gray (Predefined Process)
+    '18. Discusión\ncon Pares': '#7F7F7F',     # Gray (Predefined Process)
+    '21. Publicación': '#7F7F7F',              # Gray (Predefined Process)
+    '3. Definición\nde Problema': '#C00000',   # Red (Input/Output)
+    '9. Diseño\nMetodológico': '#C00000',      # Red (Input/Output)
+    '19. Redacción\nde Informe': '#C00000',    # Red (Input/Output)
+    '22. Divulgación\nCientífica': '#C00000',  # Red (Input/Output)
+    '4. Revisión\nBibliográfica': '#4472C4',   # Blue (Process)
+    '6. Marco\nTeórico': '#4472C4',            # Blue (Process)
+    '7. Formulación\nde Hipótesis': '#4472C4', # Blue (Process)
+    '11. Selección de\nMétodos': '#4472C4',    # Blue (Process)
+    '13. Procesamiento\nde Datos': '#4472C4',  # Blue (Process)
+    '15. Análisis\nEstadístico': '#4472C4',    # Blue (Process)
+    '17. Interpretación\nde Resultados': '#4472C4', # Blue (Process)
+    '5. ¿Área de\nEstudio\nDefinida?': '#FFC000',  # Yellow (Decision)
+    '8. ¿Hipótesis\nFormulada?': '#FFC000',       # Yellow (Decision)
+    '10. Comité\nde Ética': '#FFC000',            # Yellow (Decision)
+    '14. ¿Datos\nVálidos?': '#FFC000',            # Yellow (Decision)
+    '16. ¿Hipótesis\nConfirmada?': '#FFC000',     # Yellow (Decision)
+    '20. ¿Revisión\nAprobada?': '#FFC000',        # Yellow (Decision)
+}
+
 def create_scientific_research_flowchart():
     dot = graphviz.Digraph('scientific_research', 
                          graph_attr={
@@ -558,7 +619,7 @@ def create_scientific_research_flowchart():
     def predefined_process_node(label):
         dot.node(label, label, shape='rectangle', style='rounded,filled', fillcolor='#7F7F7F', fontcolor='white')
 
-    # Crear nodos
+    # Create nodes
     terminal_node('1. Inicio')
     predefined_process_node('2. Observación\nde Fenómeno')
     input_output_node('3. Definición\nde Problema')
@@ -583,7 +644,7 @@ def create_scientific_research_flowchart():
     input_output_node('22. Divulgación\nCientífica')
     terminal_node('23. Fin')
 
-    # Conexiones
+    # Connections
     dot.edge('1. Inicio', '2. Observación\nde Fenómeno')
     dot.edge('2. Observación\nde Fenómeno', '3. Definición\nde Problema')
     dot.edge('3. Definición\nde Problema', '4. Revisión\nBibliográfica')
@@ -616,188 +677,75 @@ def create_scientific_research_flowchart():
 
     return dot
 
-# Crear el diagrama
-flowchart = create_scientific_research_flowchart()
-
 def render_graphviz(dot):
     svg_content = dot.pipe(format='svg').decode('utf-8')
     return svg_content
 
-# Mostrar el diagrama
+# Create and display the flowchart
+flowchart = create_scientific_research_flowchart()
 st.markdown("<h3 style='text-align: center; color: #aaaaaa;'>Diagrama de Flujo MC-14</h3>", unsafe_allow_html=True)
 svg_content = render_graphviz(flowchart)
 components.html(svg_content, height=700, scrolling=True)
 
-# Lista de nodos para selección
+# Node selection section
 st.markdown("### Selecciona una etapa para ver detalles:")
 
-# Colores por tipo de nodo
-node_colors = {
-    '1. Inicio': '#70AD47',
-    '23. Fin': '#70AD47',
-    '2. Observación\nde Fenómeno': '#7F7F7F',
-    '12. Recolección\nde Datos': '#7F7F7F',
-    '18. Discusión\ncon Pares': '#7F7F7F',
-    '21. Publicación': '#7F7F7F',
-    '3. Definición\nde Problema': '#C00000',
-    '9. Diseño\nMetodológico': '#C00000',
-    '19. Redacción\nde Informe': '#C00000',
-    '22. Divulgación\nCientífica': '#C00000',
-    '4. Revisión\nBibliográfica': '#4472C4',
-    '6. Marco\nTeórico': '#4472C4',
-    '7. Formulación\nde Hipótesis': '#4472C4',
-    '11. Selección de\nMétodos': '#4472C4',
-    '13. Procesamiento\nde Datos': '#4472C4',
-    '15. Análisis\nEstadístico': '#4472C4',
-    '17. Interpretación\nde Resultados': '#4472C4',
-    '5. ¿Área de\nEstudio\nDefinida?': '#FFC000',
-    '8. ¿Hipótesis\nFormulada?': '#FFC000',
-    '10. Comité\nde Ética': '#FFC000',
-    '14. ¿Datos\nVálidos?': '#FFC000',
-    '16. ¿Hipótesis\nConfirmada?': '#FFC000',
-    '20. ¿Revisión\nAprobada?': '#FFC000',
-}
-
-# CSS para los botones
-st.markdown("""
-<style>
-    .node-button {
-        color: white !important;
-        font-family: Arial, sans-serif !important;
-        font-weight: bold !important;
-        border: none !important;
-        border-radius: 5px !important;
-        padding: 10px !important;
-        text-align: center !important;
-        margin: 5px 0 !important;
-        cursor: pointer !important;
-        width: 100% !important;
-        background-color: #333333 !important;
-        border: 2px solid !important;
-        transition: all 0.3s ease !important;
-    }
-    .node-button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 0 8px rgba(255,255,255,0.2);
-    }
-    .node-button.decision {
-        color: black !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Organizar botones en 3 columnas
+# Create columns for node buttons
 all_nodes = list(node_descriptions.keys())
 col1, col2, col3 = st.columns(3)
 
-with col1:
-    for i in range(0, len(all_nodes), 3):
-        if i < len(all_nodes):
-            node = all_nodes[i]
-            color = node_colors.get(node, '#4472C4')
-            text_class = " decision" if "¿" in node else ""
-            st.markdown(f"""
-            <button 
-                onclick="this.dispatchEvent(new CustomEvent('node_clicked', {{bubbles: true, detail: {{node: '{node}'}}}}));" 
-                class="node-button{text_class}" 
-                style="border-color: {color};" 
-                id="node_{i}">
-                {node}
-            </button>
-            """, unsafe_allow_html=True)
-            components.html(f"""
-            <script>
-                document.getElementById('node_{i}').addEventListener('node_clicked', function(e) {{
-                    window.parent.postMessage({{
-                        type: 'streamlit:setComponentValue',
-                        value: '{node}'
-                    }}, '*');
-                }});
-            </script>
-            """, height=0)
+# Function to create node buttons
+def create_node_buttons(column, start_index):
+    with column:
+        for i in range(start_index, len(all_nodes), 3):
+            if i < len(all_nodes):
+                node = all_nodes[i]
+                color = node_colors.get(node, '#4472C4')
+                
+                st.markdown(f"""
+                <button 
+                    onclick="window.parent.postMessage({{type: 'select_node', node: '{node}'}}, '*');" 
+                    onmouseover="window.parent.postMessage({{type: 'hover_node', node: '{node}'}}, '*');"
+                    class="node-button" 
+                    style="
+                        background-color: {color};
+                        color: {'black' if color == '#FFC000' else 'white'};
+                        border: 2px solid {'black' if color == '#FFC000' else 'white'};
+                    ">
+                    {node}
+                </button>
+                """, unsafe_allow_html=True)
 
-with col2:
-    for i in range(1, len(all_nodes), 3):
-        if i < len(all_nodes):
-            node = all_nodes[i]
-            color = node_colors.get(node, '#4472C4')
-            text_class = " decision" if "¿" in node else ""
-            st.markdown(f"""
-            <button 
-                onclick="this.dispatchEvent(new CustomEvent('node_clicked', {{bubbles: true, detail: {{node: '{node}'}}}}));" 
-                class="node-button{text_class}" 
-                style="border-color: {color};" 
-                id="node_{i}">
-                {node}
-            </button>
-            """, unsafe_allow_html=True)
-            components.html(f"""
-            <script>
-                document.getElementById('node_{i}').addEventListener('node_clicked', function(e) {{
-                    window.parent.postMessage({{
-                        type: 'streamlit:setComponentValue',
-                        value: '{node}'
-                    }}, '*');
-                }});
-            </script>
-            """, height=0)
+# Create node buttons in three columns
+create_node_buttons(col1, 0)
+create_node_buttons(col2, 1)
+create_node_buttons(col3, 2)
 
-with col3:
-    for i in range(2, len(all_nodes), 3):
-        if i < len(all_nodes):
-            node = all_nodes[i]
-            color = node_colors.get(node, '#4472C4')
-            text_class = " decision" if "¿" in node else ""
-            st.markdown(f"""
-            <button 
-                onclick="this.dispatchEvent(new CustomEvent('node_clicked', {{bubbles: true, detail: {{node: '{node}'}}}}));" 
-                class="node-button{text_class}" 
-                style="border-color: {color};" 
-                id="node_{i}">
-                {node}
-            </button>
-            """, unsafe_allow_html=True)
-            components.html(f"""
-            <script>
-                document.getElementById('node_{i}').addEventListener('node_clicked', function(e) {{
-                    window.parent.postMessage({{
-                        type: 'streamlit:setComponentValue',
-                        value: '{node}'
-                    }}, '*');
-                }});
-            </script>
-            """, height=0)
-
-# JavaScript para manejar clicks
+# Handle node selection and hover
 components.html("""
 <script>
-    window.addEventListener('message', function(e) {
-        if (e.data.type === 'streamlit:componentReady') {
-            document.querySelectorAll('.node-button').forEach(function(button) {
-                button.addEventListener('click', function() {
-                    const node = this.textContent.trim();
-                    window.parent.postMessage({
-                        type: 'streamlit:setComponentValue',
-                        value: node
-                    }, '*');
-                });
-            });
-        }
-    });
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'select_node') {
+        window.parent.postMessage({
+            type: 'streamlit:setComponentValue', 
+            value: event.data.node
+        }, '*');
+    }
+    if (event.data.type === 'hover_node') {
+        window.parent.postMessage({
+            type: 'streamlit:setComponentValue', 
+            value: event.data.node + '_hover'
+        }, '*');
+    }
+});
 </script>
 """, height=0)
 
-# Mostrar descripción del nodo seleccionado
-if st.session_state["selected_node"] is not None and st.session_state["selected_node"] in node_descriptions:
+# Display selected node description
+if st.session_state["selected_node"] and st.session_state["selected_node"] in node_descriptions:
     desc = node_descriptions[st.session_state["selected_node"]]
     with st.expander(f"**{desc['title']}**", expanded=True):
         st.markdown(desc["content"])
-    st.markdown("---")
 
-# Créditos finales
-st.markdown("""
-<div style='text-align: center; color: #888; margin-top: 20px;'>
-    <p>Metodología MC-14 © 2025 - Diagrama generado automáticamente</p>
-    <p>Actualizado: Marzo 2025 | Versión 2.1</p>
-</div>
-""", unsafe_allow_html=True)
+# Display hover node description
+hover_node = st.session_state.get
