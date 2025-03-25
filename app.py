@@ -1,17 +1,17 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import graphviz
+import os
+import base64
 
-# Configuración de página
+# Configuración inicial de la página
 st.set_page_config(page_title="Diagrama de Flujo de Investigación Científica MC-14", layout="wide")
 
-# Inicialización del estado de sesión
+# Inicialización del estado de la sesión
 if "selected_node" not in st.session_state:
     st.session_state["selected_node"] = None
-if "hover_node" not in st.session_state:
-    st.session_state["hover_node"] = None
 
-# Estilos CSS personalizados
+# Personalización del fondo de la página
 st.markdown("""
 <style>
     .main {
@@ -21,38 +21,19 @@ st.markdown("""
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
         color: white;
     }
-    .node-hover-card {
-        background-color: rgba(61, 61, 61, 0.95);
-        border: 2px solid #4472C4;
-        border-radius: 10px;
-        padding: 15px;
-        margin: 10px 0;
-        transition: all 0.3s ease;
+    .stButton>button {
+        background-color: #4E4E4E;
+        color: white;
+        border: 1px solid #666;
     }
-    .node-hover-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 0 15px rgba(68, 114, 196, 0.5);
+    .stButton>button:hover {
+        background-color: #666;
+        color: white;
     }
-    .node-button {
+    .css-1l4y3l0 {
+        background-color: #3D3D3D;
         color: white !important;
-        font-family: Arial, sans-serif !important;
-        font-weight: bold !important;
-        border: none !important;
-        border-radius: 5px !important;
-        padding: 12px !important;
-        text-align: center !important;
-        margin: 8px 0 !important;
-        cursor: pointer !important;
-        width: 100% !important;
-        transition: all 0.3s ease !important;
-        font-size: 14px !important;
-    }
-    .node-button:hover {
-        transform: scale(1.03);
-        box-shadow: 0 0 10px rgba(255,255,255,0.3);
-    }
-    .node-button.decision {
-        color: black !important;
+        border: 1px solid #555;
     }
     .stExpander {
         background-color: #3D3D3D;
@@ -83,7 +64,6 @@ st.markdown("""
         </div>
     </div>
 </div>
-
 <div style='background-color: #252525; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #444;'>
     <h1 style='text-align: center; color: white; margin: 5px 0;'>Diagrama de Flujo de Investigación Científica MC-14</h1>
     <p style='text-align: center; color: white; font-size: 18px; margin: 5px 0;'>Representación visual de la Metodología MC-14 de Investigación Científica Cuantitativa</p>
@@ -91,31 +71,30 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Descripciones de los nodos
+# Descripciones detalladas para cada nodo
 node_descriptions = {
     "1. Inicio": {
         "title": "🚀 Inicio del Proceso Científico",
         "content": """
         **Definición**: Punto de partida formal del ciclo de investigación científica según el método MC-14.
-        
         **Características clave**:
         - Marca el comienzo de la curiosidad científica organizada
         - Requiere mentalidad abierta y observadora
         - No tiene requisitos previos específicos
-        
         **Salida esperada**: Identificación de un fenómeno potencialmente investigable.
+        **Ejemplo MC-14**: Un investigador nota un patrón inusual en datos epidemiológicos.
         """
     },
     "2. Observación\nde Fenómeno": {
         "title": "🔍 Observación Curiosa (Etapa 1 MC-14)",
         "content": """
         **Definición**: Detección sistemática y documentada de un fenómeno que merece investigación.
-        
         **Proceso típico MC-14**:
         1. Registro objetivo de fenómenos
         2. Identificación de variables relevantes
         3. Documentación precisa del contexto observacional
-        
+        **Importancia**: 
+        > "La observación cuidadosa es el cimiento de toda investigación científica válida" - Principio MC-14
         **Checklist**:
         ✔️ ¿El fenómeno es reproducible?  
         ✔️ ¿Existe documentación adecuada?  
@@ -126,58 +105,355 @@ node_descriptions = {
         "title": "🎯 Planteamiento del Problema (Etapa 2 MC-14)",
         "content": """
         **Definición**: Delimitación precisa del fenómeno a investigar según estándares MC-14.
-        
         **Elementos clave**:
-        - Pregunta de investigación bien formulada
-        - Justificación de su importancia
-        - Alcances y limitaciones definidos
-        
+        - Pregunta de investigación bien formulada (¿Qué? ¿Cómo? ¿Por qué?)
+        - Justificación de su importancia teórica/práctica
+        - Alcances y limitaciones definidos explícitamente
+        **Criterios MC-14**:
+        - Debe ser medible empíricamente
+        - Acotado temporal/espacialmente
+        - Relevante para el campo disciplinar
         **Ejemplo válido**: 
-        "¿Cómo afecta la concentración de CO₂ al crecimiento de plantas en condiciones controladas?"
+        "¿Cómo afecta la concentración de CO₂ (entre 400-800 ppm) al crecimiento de Arabidopsis thaliana en condiciones controladas de luz y humedad?"
         """
     },
-    # ... (Agrega aquí las demás descripciones de nodos siguiendo el mismo formato)
+    "4. Revisión\nBibliográfica": {
+        "title": "📚 Revisión Sistemática (Etapa 3 MC-14)",
+        "content": """
+        **Definición**: Análisis crítico exhaustivo del conocimiento existente relacionado.
+        **Metodología MC-14**:
+        1. Búsqueda en bases de datos académicas
+        2. Selección por criterios de calidad predefinidos
+        3. Síntesis conceptual organizada
+        **Productos esperados**:
+        - Mapa conceptual de teorías relevantes
+        - Identificación de vacíos de conocimiento
+        - Estado del arte actualizado
+        **Herramientas recomendadas**:
+        - Diagramas de antecedentes
+        - Tablas comparativas de hallazgos
+        - Análisis bibliométrico (cuando aplica)
+        """
+    },
+    "5. ¿Área de\nEstudio\nDefinida?": {
+        "title": "🔎 Validación del Marco Teórico",
+        "content": """
+        **Punto de decisión crítico**: Verifica si la revisión bibliográfica cumplió con los estándares MC-14:
+        **Checklist de evaluación**:
+        ✔️ Delimitación clara del ámbito de estudio  
+        ✔️ Identificación de variables clave y sus relaciones  
+        ✔️ Reconocimiento de contribuciones previas  
+        ✔️ Formulación de preguntas investigables no resueltas  
+        **Si es No**: Se requiere:
+        - Ampliación de la revisión
+        - Replanteamiento del problema
+        - Consulta con expertos
+        """
+    },
+    "6. Marco\nTeórico": {
+        "title": "🏛️ Construcción del Marco Teórico (Etapa 4 MC-14)",
+        "content": """
+        **Definición**: Estructura conceptual que fundamenta la investigación.
+        **Componentes MC-14**:
+        - Teorías principales y secundarias
+        - Definiciones operacionales
+        - Relaciones entre variables
+        - Modelos conceptuales gráficos
+        **Criterios de calidad**:
+        > "Un buen marco teórico predice, explica y contextualiza" - Estándar MC-14
+        **Errores comunes**:
+        - Listado de conceptos sin integración
+        - Omisión de teorías contradictorias
+        - Falta de vinculación con el problema
+        """
+    },
+    "7. Formulación\nde Hipótesis": {
+        "title": "💡 Formulación de Hipótesis (Etapa 5 MC-14)",
+        "content": """
+        **Definición**: Proposición verificable que relaciona variables clave.
+        **Requisitos MC-14**:
+        - Debe ser falsable empíricamente
+        - Expresar relación causal o correlacional
+        - Derivarse lógicamente del marco teórico
+        **Estructura típica**:
+        "Si [condición], entonces [resultado], porque [explicación teórica]"
+        **Ejemplo válido**:
+        "Si aumentamos la dosis de fertilizante nitrogenado (200-400 mg/L), entonces la tasa de crecimiento de Zea mays aumentará linealmente, porque el nitrógeno es limitante para la síntesis de proteínas vegetales."
+        """
+    },
+    "8. ¿Hipótesis\nFormulada?": {
+        "title": "🧪 Validación de Hipótesis",
+        "content": """
+        **Evaluación crítica** de la hipótesis según criterios MC-14:
+        **Checklist**:
+        ✔️ ¿Es específica y medible?  
+        ✔️ ¿Tiene base teórica sólida?  
+        ✔️ ¿Permite diseño experimental claro?  
+        ✔️ ¿Es relevante para el problema?  
+        **Si es No**: Requiere:
+        - Reformulación conceptual
+        - Mayor desarrollo teórico
+        - Asesoría metodológica
+        """
+    },
+    "9. Diseño\nMetodológico": {
+        "title": "📐 Diseño Experimental (Etapa 6 MC-14)",
+        "content": """
+        **Definición**: Plan detallado para probar la hipótesis.
+        **Componentes MC-14**:
+        - Tipo de estudio (experimental, observacional, etc.)
+        - Población/muestra y criterios de selección
+        - Variables (independiente, dependiente, control)
+        - Procedimientos estandarizados
+        - Controles de calidad
+        **Diagrama clave**: Esquema de flujo experimental con:
+        - Pasos secuenciales
+        - Puntos de control
+        - Criterios de parada
+        """
+    },
+    "10. Comité\nde Ética": {
+        "title": "⚖️ Evaluación Ética (Requisito MC-14)",
+        "content": """
+        **Proceso obligatorio** para investigaciones con:
+        - Seres humanos
+        - Animales
+        - Datos sensibles
+        - Impacto ambiental
+        **Documentación requerida**:
+        - Consentimiento informado (modelos)
+        - Protocolos de bienestar animal
+        - Evaluación de riesgos
+        - Plan de manejo de datos
+        **Criterios MC-14**:
+        > "Ningún avance científico justifica la violación de principios éticos"
+        """
+    },
+    "11. Selección de\nMétodos": {
+        "title": "🔧 Selección de Métodos (Etapa 7 MC-14)",
+        "content": """
+        **Definición**: Elección de técnicas específicas para recolección y análisis.
+        **Tipología MC-14**:
+        - Métodos cuantitativos (encuestas, experimentos)
+        - Métodos cualitativos (entrevistas, observación)
+        - Métodos mixtos
+        **Criterios de selección**:
+        - Validez y confiabilidad
+        - Apropiación al problema
+        - Factibilidad técnica
+        - Compatibilidad teórica
+        **Producto**: Protocolo metodológico detallado
+        """
+    },
+    "12. Recolección\nde Datos": {
+        "title": "📊 Recolección de Datos (Etapa 8 MC-14)",
+        "content": """
+        **Definición**: Ejecución sistemática del plan metodológico.
+        **Control de calidad MC-14**:
+        - Entrenamiento de auxiliares
+        - Pruebas piloto
+        - Registro riguroso de condiciones
+        - Bitácoras diarias
+        **Documentación requerida**:
+        - Datos crudos en formato estándar
+        - Metadatos completos
+        - Incidencias y desviaciones
+        **Advertencia MC-14**:
+        > "Los datos mal recolectados invalidan cualquier análisis posterior"
+        """
+    },
+    "13. Procesamiento\nde Datos": {
+        "title": "🖥️ Procesamiento de Datos (Etapa 9 MC-14)",
+        "content": """
+        **Definición**: Preparación de datos para análisis.
+        **Flujo típico MC-14**:
+        1. Digitalización/ingreso
+        2. Limpieza (outliers, valores faltantes)
+        3. Codificación y transformación
+        4. Organización en bases estructuradas
+        **Estándares**:
+        - Reproducibilidad completa
+        - Documentación de cada paso
+        - Archivos intermedios guardados
+        **Herramientas recomendadas**:
+        - R, Python (Pandas), SPSS
+        - Jupyter Notebooks para trazabilidad
+        """
+    },
+    "14. ¿Datos\nVálidos?": {
+        "title": "✅ Validación de Datos",
+        "content": """
+        **Evaluación crítica** según estándares MC-14:
+        **Checklist**:
+        ✔️ ¿Completitud (>95% sin valores faltantes)?  
+        ✔️ ¿Consistencia interna?  
+        ✔️ ¿Distribuciones esperadas?  
+        ✔️ ¿Metadatos completos?  
+        **Pruebas recomendadas**:
+        - Análisis exploratorio (EDA)
+        - Pruebas de normalidad
+        - Controles de rangos lógicos
+        **Si es No**: Requiere:
+        - Nueva recolección
+        - Imputación cuidadosa
+        - Revisión metodológica
+        """
+    },
+    "15. Análisis\nEstadístico": {
+        "title": "📈 Análisis Estadístico (Etapa 10 MC-14)",
+        "content": """
+        **Definición**: Aplicación de técnicas para probar hipótesis.
+        **Jerarquía MC-14**:
+        1. Análisis descriptivos (tendencias centrales, dispersión)
+        2. Pruebas de supuestos (normalidad, homocedasticidad)
+        3. Análisis inferenciales (pruebas de hipótesis)
+        4. Modelos avanzados (regresiones, ANOVA, etc.)
+        **Reporte estándar**:
+        - Estadísticos con intervalos de confianza
+        - Tamaños de efecto (no solo p-valores)
+        - Gráficos de visualización claros
+        **Advertencia**:
+        > "El análisis debe responder directamente a las hipótesis planteadas" - Principio MC-14
+        """
+    },
+    "16. ¿Hipótesis\nConfirmada?": {
+        "title": "🔬 Interpretación de Resultados",
+        "content": """
+        **Evaluación objetiva** de hallazgos:
+        **Escenarios MC-14**:
+        - Confirmación total: Los datos apoyan plenamente la hipótesis
+        - Confirmación parcial: Apoyo en ciertas condiciones
+        - Refutación: Los datos contradicen la hipótesis
+        - Inconclusivo: Datos insuficientes para decidir
+        **Considerar siempre**:
+        - Limitaciones del estudio
+        - Factores contextuales
+        - Sesgos potenciales
+        **Nunca**: Manipular datos para "forzar" resultados
+        """
+    },
+    "17. Interpretación\nde Resultados": {
+        "title": "🧠 Interpretación Teórica (Etapa 11 MC-14)",
+        "content": """
+        **Definición**: Vinculación de hallazgos con el marco teórico.
+        **Proceso MC-14**:
+        1. Comparación con literatura previa
+        2. Explicación de coincidencias/divergencias
+        3. Identificación de mecanismos subyacentes
+        4. Discusión de implicaciones teóricas
+        **Preguntas clave**:
+        - ¿Qué aporta esto al conocimiento existente?
+        - ¿Cómo se relaciona con teorías establecidas?
+        - ¿Qué nuevas preguntas surgen?
+        **Producto**: Diagrama conceptual actualizado
+        """
+    },
+    "18. Discusión\ncon Pares": {
+        "title": "👥 Discusión con Pares (Etapa 12 MC-14)",
+        "content": """
+        **Definición**: Evaluación crítica por expertos independientes.
+        **Formatos MC-14**:
+        - Seminarios académicos
+        - Pre-publicaciones (preprints)
+        - Revisión por pares formal
+        - Grupos de discusión disciplinar
+        **Beneficios**:
+        - Identificación de puntos ciegos
+        - Sugerencias de análisis alternativos
+        - Validación de conclusiones
+        - Networking académico
+        **Documentar**: Todas las críticas recibidas y respuestas
+        """
+    },
+    "19. Redacción\nde Informe": {
+        "title": "✍️ Redacción del Informe (Etapa 13 MC-14)",
+        "content": """
+        **Definición**: Documentación formal de la investigación.
+        **Estructura MC-14**:
+        1. Introducción (problema + hipótesis)
+        2. Métodos (reproducibilidad)
+        3. Resultados (objetivos)
+        4. Discusión (interpretación)
+        5. Conclusiones (limitaciones + futuras líneas)
+        **Estándares de calidad**:
+        - Precisión técnica
+        - Claridad expositiva
+        - Honestidad intelectual
+        - Referenciado completo
+        **Herramientas**: LaTeX, Zotero, Grammarly
+        """
+    },
+    "20. ¿Revisión\nAprobada?": {
+        "title": "🔄 Proceso de Revisión",
+        "content": """
+        **Evaluación formal** por pares ciegos.
+        **Resultados posibles**:
+        - Aceptación sin cambios (raro)
+        - Aceptación con revisiones menores
+        - Aceptación con revisiones mayores
+        - Rechazo con posibilidad de reenvío
+        - Rechazo definitivo
+        **Estrategia MC-14**:
+        1. Responder todas las críticas sistemáticamente
+        2. Documentar cada cambio realizado
+        3. Mantener tono profesional siempre
+        4. Considerar alternativas si rechazado
+        **Tiempo típico**: 3-12 meses
+        """
+    },
+    "21. Publicación": {
+        "title": "🏆 Publicación (Etapa 14 MC-14)",
+        "content": """
+        **Definición**: Difusión formal del conocimiento generado.
+        **Opciones MC-14**:
+        - Revistas indexadas (WoS/Scopus)
+        - Conferencias internacionales
+        - Libros académicos
+        - Repositorios institucionales
+        **Indicadores de impacto**:
+        - Factor de impacto de la revista
+        - Citaciones posteriores
+        - Altmetrics (descargas, menciones)
+        **Ética**: 
+        > "Publicar o perecer no justifica prácticas cuestionables" - Principio MC-14
+        """
+    },
+    "22. Divulgación\nCientífica": {
+        "title": "🌍 Divulgación Científica",
+        "content": """
+        **Definición**: Adaptación de resultados para públicos no especializados.
+        **Formatos MC-14**:
+        - Artículos de divulgación
+        - Entrevistas en medios
+        - Talleres comunitarios
+        - Contenido en redes sociales
+        **Principios clave**:
+        - Rigor sin tecnicismos
+        - Atractivo visual
+        - Relevancia social
+        - Transparencia sobre limitaciones
+        **Advertencia**:
+        Evitar sensacionalismo o simplificaciones engañosas
+        """
+    },
     "23. Fin": {
         "title": "🏁 Conclusión del Ciclo MC-14",
         "content": """
         **Definición**: Finalización formal del proceso investigativo.
-        
         **Productos finales**:
         - Publicación indexada
-        - Datos abiertos
+        - Datos abiertos (cuando posible)
         - Materiales complementarios
-        
+        - Registro de propiedad intelectual (si aplica)
+        **Autoevaluación MC-14**:
+        1. ¿Se respondió la pregunta inicial?
+        2. ¿Qué aprendimos en el proceso?
+        3. ¿Qué haríamos diferente?
+        4. ¿Qué preguntas nuevas surgieron?
         **Frase final**:
         > "La ciencia es un viaje, no un destino" - Principio MC-14
         """
     }
-}
-
-# Mapeo de colores para nodos
-node_colors = {
-    '1. Inicio': '#70AD47',
-    '23. Fin': '#70AD47',
-    '2. Observación\nde Fenómeno': '#7F7F7F',
-    '12. Recolección\nde Datos': '#7F7F7F',
-    '18. Discusión\ncon Pares': '#7F7F7F',
-    '21. Publicación': '#7F7F7F',
-    '3. Definición\nde Problema': '#C00000',
-    '9. Diseño\nMetodológico': '#C00000',
-    '19. Redacción\nde Informe': '#C00000',
-    '22. Divulgación\nCientífica': '#C00000',
-    '4. Revisión\nBibliográfica': '#4472C4',
-    '6. Marco\nTeórico': '#4472C4',
-    '7. Formulación\nde Hipótesis': '#4472C4',
-    '11. Selección de\nMétodos': '#4472C4',
-    '13. Procesamiento\nde Datos': '#4472C4',
-    '15. Análisis\nEstadístico': '#4472C4',
-    '17. Interpretación\nde Resultados': '#4472C4',
-    '5. ¿Área de\nEstudio\nDefinida?': '#FFC000',
-    '8. ¿Hipótesis\nFormulada?': '#FFC000',
-    '10. Comité\nde Ética': '#FFC000',
-    '14. ¿Datos\nVálidos?': '#FFC000',
-    '16. ¿Hipótesis\nConfirmada?': '#FFC000',
-    '20. ¿Revisión\nAprobada?': '#FFC000',
 }
 
 def create_scientific_research_flowchart():
@@ -215,7 +491,7 @@ def create_scientific_research_flowchart():
     
     def predefined_process_node(label):
         dot.node(label, label, shape='rectangle', style='rounded,filled', fillcolor='#7F7F7F', fontcolor='white')
-
+    
     # Crear nodos
     terminal_node('1. Inicio')
     predefined_process_node('2. Observación\nde Fenómeno')
@@ -240,12 +516,13 @@ def create_scientific_research_flowchart():
     predefined_process_node('21. Publicación')
     input_output_node('22. Divulgación\nCientífica')
     terminal_node('23. Fin')
-
+    
     # Conexiones
     dot.edge('1. Inicio', '2. Observación\nde Fenómeno')
     dot.edge('2. Observación\nde Fenómeno', '3. Definición\nde Problema')
     dot.edge('3. Definición\nde Problema', '4. Revisión\nBibliográfica')
-    dot.edge('4. Revisión\nBibliográfica', '5. ¿Área de\nEstudio\nDefinida?')
+    dot.edge('4. Revisión\nBibliográfica', '3. Definición\nde Problema', label='Refinar')
+    dot.edge('4. Revisión\nBibliográfica', '5. ¿Área de\nEstudio\nDefinida?', label='Definido')
     dot.edge('5. ¿Área de\nEstudio\nDefinida?', '6. Marco\nTeórico', label='Sí')
     dot.edge('5. ¿Área de\nEstudio\nDefinida?', '4. Revisión\nBibliográfica', label='No')
     dot.edge('6. Marco\nTeórico', '7. Formulación\nde Hipótesis')
@@ -270,99 +547,166 @@ def create_scientific_research_flowchart():
     dot.edge('20. ¿Revisión\nAprobada?', '19. Redacción\nde Informe', label='No')
     dot.edge('21. Publicación', '22. Divulgación\nCientífica')
     dot.edge('22. Divulgación\nCientífica', '23. Fin')
-
     return dot
+
+# Crear el diagrama
+flowchart = create_scientific_research_flowchart()
 
 def render_graphviz(dot):
     svg_content = dot.pipe(format='svg').decode('utf-8')
+    # Agregar interactividad a los nodos
+    for node in node_descriptions.keys():
+        escaped_node = node.replace("\n", "\\n")
+        description = node_descriptions[node]["content"].replace("\n", "\\n").replace('"', '\\"')
+        svg_content = svg_content.replace(
+            f'title="{escaped_node}"',
+            f'''onclick="window.parent.postMessage({{'type': 'streamlit:setComponentValue', 'value': '{node}'}}, '*');" title="{escaped_node}"'''
+        )
     return svg_content
 
-# Crear y mostrar el diagrama de flujo
-flowchart = create_scientific_research_flowchart()
+# Mostrar el diagrama
 st.markdown("<h3 style='text-align: center; color: #aaaaaa;'>Diagrama de Flujo MC-14</h3>", unsafe_allow_html=True)
 svg_content = render_graphviz(flowchart)
 components.html(svg_content, height=700, scrolling=True)
 
-# Sección de selección de nodos
+# Lista de nodos para selección
 st.markdown("### Selecciona una etapa para ver detalles:")
 
-# Crear columnas para los botones de nodos
+# Colores por tipo de nodo
+node_colors = {
+    '1. Inicio': '#70AD47',
+    '23. Fin': '#70AD47',
+    '2. Observación\nde Fenómeno': '#7F7F7F',
+    '12. Recolección\nde Datos': '#7F7F7F',
+    '18. Discusión\ncon Pares': '#7F7F7F',
+    '21. Publicación': '#7F7F7F',
+    '3. Definición\nde Problema': '#C00000',
+    '9. Diseño\nMetodológico': '#C00000',
+    '19. Redacción\nde Informe': '#C00000',
+    '22. Divulgación\nCientífica': '#C00000',
+    '4. Revisión\nBibliográfica': '#4472C4',
+    '6. Marco\nTeórico': '#4472C4',
+    '7. Formulación\nde Hipótesis': '#4472C4',
+    '11. Selección de\nMétodos': '#4472C4',
+    '13. Procesamiento\nde Datos': '#4472C4',
+    '15. Análisis\nEstadístico': '#4472C4',
+    '17. Interpretación\nde Resultados': '#4472C4',
+    '5. ¿Área de\nEstudio\nDefinida?': '#FFC000',
+    '8. ¿Hipótesis\nFormulada?': '#FFC000',
+    '10. Comité\nde Ética': '#FFC000',
+    '14. ¿Datos\nVálidos?': '#FFC000',
+    '16. ¿Hipótesis\nConfirmada?': '#FFC000',
+    '20. ¿Revisión\nAprobada?': '#FFC000',
+}
+
+# CSS para los botones
+st.markdown("""
+<style>
+    .node-button {
+        color: white !important;
+        font-family: Arial, sans-serif !important;
+        font-weight: bold !important;
+        border: none !important;
+        border-radius: 5px !important;
+        padding: 10px !important;
+        text-align: center !important;
+        margin: 5px 0 !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        background-color: #333333 !important;
+        border: 2px solid !important;
+        transition: all 0.3s ease !important;
+    }
+    .node-button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 0 8px rgba(255,255,255,0.2);
+    }
+    .node-button.decision {
+        color: black !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Organizar botones en 3 columnas
 all_nodes = list(node_descriptions.keys())
 col1, col2, col3 = st.columns(3)
 
-# Función para crear botones de nodos
-def create_node_buttons(column, start_index):
-    with column:
-        for i in range(start_index, len(all_nodes), 3):
-            if i < len(all_nodes):
-                node = all_nodes[i]
-                color = node_colors.get(node, '#4472C4')
-                
-                # Botón con eventos personalizados
-                components.html(f"""
-                <button 
-                    id="node_{i}"
-                    style="
-                        background-color: {color};
-                        color: {'black' if color == '#FFC000' else 'white'};
-                        border: 2px solid {'black' if color == '#FFC000' else 'white'};
-                        width: 100%;
-                        padding: 12px;
-                        margin: 8px 0;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        font-weight: bold;
-                        font-family: Arial;
-                        font-size: 14px;
-                        transition: all 0.3s ease;
-                    "
-                    onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 0 10px rgba(255,255,255,0.3)';"
-                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';"
-                >
-                    {node}
-                </button>
-                <script>
-                    document.getElementById("node_{i}").addEventListener("click", function() {{
-                        window.parent.postMessage({{
-                            type: 'streamlit:setComponentValue',
-                            value: '{node}'
-                        }}, '*');
-                    }});
-                </script>
-                """, height=60)
+with col1:
+    for i in range(0, len(all_nodes), 3):
+        if i < len(all_nodes):
+            node = all_nodes[i]
+            color = node_colors.get(node, '#4472C4')
+            text_class = " decision" if "¿" in node else ""
+            st.markdown(f"""
+            <button 
+                onclick="handleNodeClick('{node}')" 
+                class="node-button{text_class}" 
+                style="border-color: {color};" 
+                id="node_{i}">
+                {node}
+            </button>
+            """, unsafe_allow_html=True)
 
-# Crear botones en tres columnas
-create_node_buttons(col1, 0)
-create_node_buttons(col2, 1)
-create_node_buttons(col3, 2)
+with col2:
+    for i in range(1, len(all_nodes), 3):
+        if i < len(all_nodes):
+            node = all_nodes[i]
+            color = node_colors.get(node, '#4472C4')
+            text_class = " decision" if "¿" in node else ""
+            st.markdown(f"""
+            <button 
+                onclick="handleNodeClick('{node}')" 
+                class="node-button{text_class}" 
+                style="border-color: {color};" 
+                id="node_{i}">
+                {node}
+            </button>
+            """, unsafe_allow_html=True)
 
-# Manejador de comunicación JavaScript
-selected_node = components.html(
-    """
-    <script>
-        const sendValue = (value) => {
-            window.parent.postMessage({
-                type: 'streamlit:setComponentValue',
-                value: value
-            }, '*');
-        }
-    </script>
-    """,
-    height=0,
-    key="node_handler"
-)
+with col3:
+    for i in range(2, len(all_nodes), 3):
+        if i < len(all_nodes):
+            node = all_nodes[i]
+            color = node_colors.get(node, '#4472C4')
+            text_class = " decision" if "¿" in node else ""
+            st.markdown(f"""
+            <button 
+                onclick="handleNodeClick('{node}')" 
+                class="node-button{text_class}" 
+                style="border-color: {color};" 
+                id="node_{i}">
+                {node}
+            </button>
+            """, unsafe_allow_html=True)
 
-# Actualizar estado de sesión basado en la selección
-if selected_node is not None:
-    st.session_state["selected_node"] = selected_node
+# Agregar un único bloque de JavaScript al final
+components.html("""
+<script>
+    function handleNodeClick(node) {
+        window.parent.postMessage({
+            type: 'streamlit:setComponentValue',
+            value: node
+        }, '*');
+    }
+
+    // Manejar clics en botones
+    document.querySelectorAll('.node-button').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const node = this.textContent.trim();
+            handleNodeClick(node);
+        });
+    });
+</script>
+""", height=0)
 
 # Mostrar descripción del nodo seleccionado
-if st.session_state["selected_node"] and st.session_state["selected_node"] in node_descriptions:
+if st.session_state["selected_node"] is not None and st.session_state["selected_node"] in node_descriptions:
     desc = node_descriptions[st.session_state["selected_node"]]
     with st.expander(f"**{desc['title']}**", expanded=True):
         st.markdown(desc["content"])
+    st.markdown("---")
 
-# Pie de página
+# Créditos finales
 st.markdown("""
 <div style='text-align: center; color: #888; margin-top: 20px;'>
     <p>Metodología MC-14 © 2025 - Diagrama generado automáticamente</p>
